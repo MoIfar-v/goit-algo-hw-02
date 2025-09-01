@@ -3,6 +3,7 @@ import time
 import random
 import keyboard
 from datetime import datetime
+from pynput.keyboard import Listener
 
 # Списки для випадкової генерації даних
 clients = ["Іван Петренко", "Олена Коваль", "Андрій Сидоренко",
@@ -17,7 +18,7 @@ priorities = ["звичайний", "високий"]
 
 queue = qu.Queue()
 request_id = 1
-
+keyboard_quit = False
 
 def generate_request():
     request = {
@@ -40,14 +41,18 @@ def process_request():
     return message
 
 
-while True:
+def keyboard_handler(key):
+    global keyboard_quit
+    if hasattr(key, 'char') and key.char == 'q':
+        keyboard_quit = True
+
+keyboard_listener = Listener(on_press=keyboard_handler)
+keyboard_listener.start()
+
+while not keyboard_quit:
     request = generate_request()
     queue.put(request)
     print(f"[НОВА ЗАЯВКА] {request}") 
     print(process_request())
     request_id += 1
-    time.sleep(3)  # затримка між заявками (3 секунди) 
-    
-    if keyboard.is_pressed("space"):  # якщо натиснули "пробіл" → вихід, але чогось треба спамити
-        print("Програму завершено користувачем.")
-        break
+    time.sleep(2)  # затримка між заявками (2 секунди)  
